@@ -1,4 +1,4 @@
-package com.fashion_e_commerce.User.Configuration;
+package com.fashion_e_commerce.Configuration;
 
 import com.fashion_e_commerce.User.Components.JWTAuthFilter;
 import com.fashion_e_commerce.User.Services.UserService;
@@ -43,7 +43,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()  // Allow public access to auth endpoints
+                        .requestMatchers("/api/auth/**").permitAll() // Allow access to authentication endpoints
+                        .requestMatchers("/api/categories/**").permitAll() // Allow access to category endpoints
                         .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated() // Require authentication for other requests
                 )
