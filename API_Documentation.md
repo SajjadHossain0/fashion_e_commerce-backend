@@ -218,3 +218,28 @@ Represents an item in the user's cart.
 - Clearing the cart with `/clear/{userId}` will remove all items associated with the specified user.
 
 ---
+
+### Order Controller
+
+
+### 1. **Place Order**
+- **POST** `/api/orders/place`
+
+**Description**:
+- This endpoint allows users to place an order with the required details.
+
+**Request Parameters**:
+- `userId` (Long): The ID of the user placing the order.
+- `contactInfo` (String): Contact information for delivery.
+- `shippingAddress` (String): The address where the order should be shipped.
+- `paymentMethod` (String): The payment method for the order (e.g., "COD", "Bkash").
+
+**Response**:
+- Status: `200 OK`
+- Body: Returns the created order object, including its details such as `orderId`, `userId`, `contactInfo`, `shippingAddress`, and `paymentMethod`.
+
+**Example Request**:
+   ```http
+   POST /api/orders/place?userId=1&contactInfo=1234567890&shippingAddress=123+Main+Street&paymentMethod=COD
+```
+---

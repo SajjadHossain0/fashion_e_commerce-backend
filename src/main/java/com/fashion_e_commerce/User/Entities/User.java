@@ -35,7 +35,4 @@ public class User {
     private String city;
     private String altnumber;
     private String notes;
-
-
-
 }
