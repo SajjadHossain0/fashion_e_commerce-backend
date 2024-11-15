@@ -28,6 +28,8 @@ public class Order {
     @OneToMany(cascade = CascadeType.ALL)
     private List<CartItem> items; // List of items in the order
 
+    private Double shippingCharge;
+
     private double totalPrice; // Total price of the order
 
     private String contactInfo; // Contact information of the user

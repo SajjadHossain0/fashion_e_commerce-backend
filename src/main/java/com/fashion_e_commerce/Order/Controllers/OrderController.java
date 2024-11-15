@@ -22,8 +22,9 @@ public class OrderController {
             @RequestParam Long userId,
             @RequestParam String contactInfo,
             @RequestParam String shippingAddress,
-            @RequestParam String paymentMethod) {
-        Order order = orderService.placeOrder(userId, contactInfo, shippingAddress, paymentMethod);
+            @RequestParam String paymentMethod,
+            @RequestParam boolean isDhaka) {
+        Order order = orderService.placeOrder(userId, contactInfo, shippingAddress, paymentMethod, isDhaka);
         return ResponseEntity.ok(order);
     }
 
