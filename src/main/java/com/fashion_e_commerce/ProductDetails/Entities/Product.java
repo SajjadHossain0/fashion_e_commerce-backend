@@ -50,4 +50,9 @@ public class Product {
         return price - (price * (discount / 100));
     }
 
+    // Constructor for setting only the ID
+    public Product(Long id) {
+        this.id = id;
+    }
+
 }

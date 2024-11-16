@@ -35,4 +35,9 @@ public class User {
     private String city;
     private String altnumber;
     private String notes;
+
+    // Constructor for setting only the ID
+    public User(Long id) {
+        this.id = id;
+    }
 }
