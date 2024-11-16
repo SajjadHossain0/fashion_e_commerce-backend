@@ -4,9 +4,12 @@ import com.fashion_e_commerce.Cart.Entities.CartItem;
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.Order.Services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -37,5 +40,22 @@ public class OrderController {
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
+
+    @GetMapping("/summary/{orderId}")
+    public ResponseEntity<Order> getOrderSummary(@PathVariable Long orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/invoice/{orderId}")
+    public ResponseEntity<byte[]> downloadInvoice(@PathVariable Long orderId) throws IOException {
+        Order order = orderService.getOrderById(orderId);
+        byte[] invoice = orderService.generateInvoice(order);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(invoice);
+    }
+
 }
 
