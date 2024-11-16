@@ -43,6 +43,9 @@ public class Product {
 
     private boolean available;
 
+    @ElementCollection
+    private List<String> tags;
+
     public double getDiscountedPrice() {
         return price - (price * (discount / 100));
     }

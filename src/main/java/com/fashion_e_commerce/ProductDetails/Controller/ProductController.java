@@ -21,13 +21,20 @@ public class ProductController {
 
     // Add a new product
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestParam("title") String title, @RequestParam("price") double price,
-            @RequestParam("discount") double discount, @RequestParam("description") String description,
-            @RequestParam("detailedDescription") String detailedDescription,
-            @RequestParam("brand") String brand, @RequestParam("categoryId") Long categoryId,
-            @RequestParam("subCategoryId") Long subCategoryId, @RequestParam("sizes") List<String> sizes,
-            @RequestParam("material") String material, @RequestParam("stock") int stock,
-            @RequestParam("available") boolean available, @RequestParam("image") MultipartFile image) throws IOException {
+    public ResponseEntity<Product> addProduct(@RequestParam("title") String title,
+                                              @RequestParam("price") double price,
+                                              @RequestParam("discount") double discount,
+                                              @RequestParam("description") String description,
+                                              @RequestParam("detailedDescription") String detailedDescription,
+                                              @RequestParam("brand") String brand,
+                                              @RequestParam("categoryId") Long categoryId,
+                                              @RequestParam("subCategoryId") Long subCategoryId,
+                                              @RequestParam("sizes") List<String> sizes,
+                                              @RequestParam("material") String material,
+                                              @RequestParam("stock") int stock,
+                                              @RequestParam("available") boolean available,
+                                              @RequestParam("image") MultipartFile image,
+                                              @RequestParam("tags") List<String> tags) throws IOException {
 
         Product product = new Product();
         product.setTitle(title);
@@ -41,8 +48,9 @@ public class ProductController {
         product.setStock(stock);
         product.setAvailable(available);
         product.setImage(image.getBytes());
+        product.setTags(tags); // Set the tags
 
-        Product savedProduct = productService.addProduct(product, categoryId, subCategoryId);
+        Product savedProduct = productService.addProduct(product, categoryId, subCategoryId, tags);
         return ResponseEntity.ok(savedProduct);
     }
 
@@ -62,16 +70,25 @@ public class ProductController {
 
     // Update an existing product
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long productId, @RequestParam("title") String title,
-            @RequestParam("price") double price, @RequestParam("discount") double discount,
-            @RequestParam("description") String description, @RequestParam("detailedDescription") String detailedDescription,
-            @RequestParam("brand") String brand, @RequestParam("categoryId") Long categoryId,
-            @RequestParam("subCategoryId") Long subCategoryId, @RequestParam("sizes") List<String> sizes, @RequestParam("material") String material,
-            @RequestParam("stock") int stock, @RequestParam("available") boolean available, @RequestParam("image") MultipartFile image) throws IOException {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long productId,
+                                                 @RequestParam("title") String title,
+                                                 @RequestParam("price") double price,
+                                                 @RequestParam("discount") double discount,
+                                                 @RequestParam("description") String description,
+                                                 @RequestParam("detailedDescription") String detailedDescription,
+                                                 @RequestParam("brand") String brand,
+                                                 @RequestParam("categoryId") Long categoryId,
+                                                 @RequestParam("subCategoryId") Long subCategoryId,
+                                                 @RequestParam("sizes") List<String> sizes,
+                                                 @RequestParam("material") String material,
+                                                 @RequestParam("stock") int stock,
+                                                 @RequestParam("available") boolean available,
+                                                 @RequestParam("image") MultipartFile image,
+                                                 @RequestParam("tags") List<String> tags) throws IOException {
 
         Product updatedProduct = productService.updateProduct(
                 productId, title, price, discount, description, detailedDescription, brand,
-                categoryId, subCategoryId, sizes, material, stock, available, image.getBytes());
+                categoryId, subCategoryId, sizes, material, stock, available, image.getBytes(), tags);
         return ResponseEntity.ok(updatedProduct);
     }
 
@@ -81,4 +98,5 @@ public class ProductController {
         String response = productService.deleteProduct(productId);
         return ResponseEntity.ok(response);
     }
+
 }

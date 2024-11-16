@@ -26,7 +26,8 @@ public class ProductService {
     @Autowired
     private SubCategoryRepository subCategoryRepository;
 
-    public Product addProduct(Product product, Long categoryId, Long subCategoryId) {
+    // Add a new product with tags
+    public Product addProduct(Product product, Long categoryId, Long subCategoryId, List<String> tags) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         SubCategory subCategory = subCategoryRepository.findById(subCategoryId)
@@ -34,21 +35,26 @@ public class ProductService {
 
         product.setCategory(category);
         product.setSubCategory(subCategory);
+        product.setTags(tags); // Set the tags
 
         return productRepository.save(product);
     }
 
+    // Get all products
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
+    // Get product by ID
     public Optional<Product> getProductById(Long productId) {
         return productRepository.findById(productId);
     }
 
+    // Update a product with tags
     public Product updateProduct(Long productId, String title, double price, double discount, String description,
                                  String detailedDescription, String brand, Long categoryId, Long subCategoryId,
-                                 List<String> sizes, String material, int stock, boolean available, byte[] image) throws IOException {
+                                 List<String> sizes, String material, int stock, boolean available, byte[] image,
+                                 List<String> tags) throws IOException {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -71,12 +77,29 @@ public class ProductService {
         product.setStock(stock);
         product.setAvailable(available);
         product.setImage(image);
+        product.setTags(tags); // Update the tags
 
         return productRepository.save(product);
     }
 
+    // Delete a product
     public String deleteProduct(Long productId) {
         productRepository.deleteById(productId);
         return "Product deleted successfully";
     }
+
+    // Get products by category
+    public List<Product> getProductsByCategory(Long categoryId) {
+        return productRepository.findByCategory_Id(categoryId);
+    }
+
+    // Get products by subcategory
+    public List<Product> getProductsBySubCategory(Long subCategoryId) {
+        return productRepository.findBySubCategory_Id(subCategoryId);
+    }
+
+    public List<Product> globalSearch(String keyword) {
+        return productRepository.searchProducts(keyword);
+    }
 }
+
