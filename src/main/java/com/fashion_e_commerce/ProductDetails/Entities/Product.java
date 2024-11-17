@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Getter
@@ -47,7 +49,9 @@ public class Product {
     private List<String> tags;
 
     public double getDiscountedPrice() {
-        return price - (price * (discount / 100));
+        BigDecimal discountedPrice = new BigDecimal(price - (price * (discount / 100)));
+        discountedPrice = discountedPrice.setScale(2, RoundingMode.HALF_UP);  // Rounds to 2 decimal places
+        return discountedPrice.doubleValue();
     }
 
     // Constructor for setting only the ID
