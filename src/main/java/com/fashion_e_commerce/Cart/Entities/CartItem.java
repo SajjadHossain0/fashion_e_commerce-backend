@@ -1,5 +1,6 @@
 package com.fashion_e_commerce.Cart.Entities;
 
+import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.ProductDetails.Entities.Product;
 import com.fashion_e_commerce.User.Entities.User;
 import jakarta.persistence.*;
@@ -26,4 +27,9 @@ public class CartItem {
 
     private int quantity;
     private double totalprice;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = true)
+    private Order order;
+
 }

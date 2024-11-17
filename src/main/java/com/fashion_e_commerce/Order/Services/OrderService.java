@@ -1,6 +1,7 @@
 package com.fashion_e_commerce.Order.Services;
 
 import com.fashion_e_commerce.Cart.Entities.CartItem;
+import com.fashion_e_commerce.Cart.Repositories.CartRepository;
 import com.fashion_e_commerce.Cart.Services.CartService;
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.Order.Repositories.OrderRepository;
@@ -14,6 +15,7 @@ import java.util.*;
 
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,6 +32,8 @@ public class OrderService {
     private ShippingChargeRepository shippingChargeRepository;
     @Autowired
     private ShippingChargeService shippingChargeService;
+    @Autowired
+    private CartRepository cartRepository;
 
     public Order placeOrder(Long userId, String contactInfo, String shippingAddress, String paymentMethod,boolean isDhaka) {
         // Fetch cart items for the user
@@ -81,6 +85,24 @@ public class OrderService {
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElse(null);  // Fetch order or return null if not found
     }
+
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        orderRepository.delete(order); // CartItems will be deleted automatically
+    }
+    @Transactional
+    public void removeCartItem(Long orderId, Long cartItemId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        CartItem cartItem = cartRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("CartItem not found"));
+
+        order.getItems().remove(cartItem); // Remove the item
+        orderRepository.save(order); // This triggers orphan removal
+    }
+
 
 
     public byte[] generateInvoice(Order order) throws IOException {

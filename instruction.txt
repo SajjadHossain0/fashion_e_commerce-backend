@@ -1,0 +1,154 @@
+APIs for Admin Panel vs. User Side
+Here’s a breakdown of your APIs based on their purpose:
+
+Admin Panel APIs
+AuthenticationController
+
+/api/auth/register (Admin registration if required)
+ProductController
+
+POST /api/products (Add new product)
+PUT /api/products/{productId} (Update product details)
+DELETE /api/products/{productId} (Delete a product)
+CategoryController
+
+POST /api/categories (Add category)
+POST /api/categories/{categoryId}/subcategories (Add subcategory)
+OrderController
+
+GET /api/orders/all (View all orders)
+ShippingChargeController
+
+POST /api/shipping/set (Set shipping charges)
+ShippingController
+
+PUT /api/shipping/update/{orderId} (Update shipping status)
+GET /api/shipping/status/{orderId} (Track shipping for admin review)
+User Side APIs
+AuthenticationController
+
+/api/auth/login (User login)
+ProductController
+
+GET /api/products (Fetch all products)
+GET /api/products/{productId} (View product details)
+CategoryController
+
+GET /api/categories (View categories)
+GET /api/categories/{categoryId}/subcategories (View subcategories)
+CartController
+
+POST /api/cart/add (Add items to the cart)
+GET /api/cart/{userId} (View cart items)
+DELETE /api/cart/remove/{cartItemId} (Remove item from the cart)
+DELETE /api/cart/clear/{userId} (Clear cart)
+OrderController
+
+POST /api/orders/place (Place an order)
+GET /api/orders/{userId} (View user-specific orders)
+GET /api/orders/summary/{orderId} (View order summary)
+GET /api/orders/invoice/{orderId} (Download invoice)
+ShippingController
+
+POST /api/shipping/create (Shipping details for a placed order)
+SearchController
+
+GET /api/products/category/{categoryId} (Search products by category)
+GET /api/products/subcategory/{subCategoryId} (Search products by subcategory)
+GET /api/products/search?keyword={keyword} (Global product search)
+WishlistController
+
+POST /api/wishlist/{userId}/{productId} (Add to wishlist)
+GET /api/wishlist/{userId} (View user’s wishlist)
+DELETE /api/wishlist/{userId}/{productId} (Remove item from wishlist)
+
+
+1. Payment Gateway Integration:
+Since you’re building an e-commerce website, the next major feature you should focus on is integrating a payment gateway. This allows your users to securely pay for their orders online.
+
+Popular Payment Gateway Options (For Bangladesh):
+
+Bkash: A widely used mobile payment solution in Bangladesh.
+Nagad: Another mobile payment solution.
+Credit/Debit Cards: Stripe or PayPal (if you plan to cater to international customers).
+Tasks:
+
+Integrate API for payment processing.
+Implement transaction handling (e.g., success, failure).
+Secure payment forms (ensure PCI-DSS compliance if you're handling sensitive information).
+2. Order Summary & Invoice Generation:
+Allow users to view a summary of their orders, including product details, prices, discounts, taxes, shipping charges, and payment status.
+
+Tasks:
+
+Create an invoice for each order.
+Allow users to download or email invoices.
+Display order details clearly on the user dashboard.
+3. Email Notifications:
+Implement email notifications for key events in the order process (order confirmation, shipping updates, delivery status, etc.).
+
+Tasks:
+
+Send an email when an order is placed.
+Send shipping status updates and tracking details.
+Send order delivery confirmation or a review request.
+4. Customer Support/Help Center:
+Implement a customer support system where users can submit inquiries, complaints, or track issues with their orders. This could be a ticketing system or a simple contact form.
+
+Tasks:
+
+Create a contact page with a support form.
+Implement a support ticket system for order-related issues.
+Optionally, add a chatbot for quicker responses.
+5. Admin Panel:
+An admin panel is essential for managing orders, products, users, and other crucial aspects of the e-commerce platform. You may already have basic functionalities, but you might want to improve it further.
+
+Tasks:
+
+Admin can view and manage all orders.
+Admin can update the status of orders (e.g., shipped, delivered, canceled).
+Admin can manage product inventory, pricing, and discounts.
+6. User Profile Management:
+Allow users to manage their profiles, such as updating their shipping address, contact info, and payment methods.
+
+Tasks:
+
+Implement profile edit functionality.
+Allow users to save multiple shipping addresses.
+Display past order history.
+7. Analytics and Reporting:
+It's crucial to track sales, customer behavior, and other performance metrics to make informed business decisions.
+
+Tasks:
+
+Implement order reports (e.g., daily sales, product sales).
+Create customer analytics (e.g., returning vs. new customers).
+Track shipping statuses and any issues.
+8. Security Enhancements:
+Ensure the security of your platform by implementing best practices, especially when dealing with payment and user data.
+
+Tasks:
+
+Ensure HTTPS for secure communication.
+Implement JWT-based authentication (for user and admin logins).
+Validate inputs to prevent SQL injection or other malicious attacks.
+9. Performance Optimization:
+As your site grows, performance becomes more important, especially for a fast-paced e-commerce experience.
+
+Tasks:
+
+Optimize page load times (e.g., compress images, lazy loading for images, minify CSS/JS).
+Consider adding caching for static content to reduce server load.
+Monitor server response times and optimize backend queries.
+10. Marketing & Promotions:
+Once your core functionalities are in place, you might want to focus on marketing features to increase user engagement and sales.
+
+Tasks:
+
+Implement coupons and discount codes.
+Add product recommendations based on user behavior.
+Implement a referral program for users to invite others and earn rewards.
+Next Steps:
+Start with Payment Gateway Integration: This is a high-priority task, as it directly impacts your ability to complete orders.
+Order Summary & Invoices: Users expect an order summary and invoice after placing an order.
+Email Notifications: Keep customers informed with confirmation and shipping status emails.
