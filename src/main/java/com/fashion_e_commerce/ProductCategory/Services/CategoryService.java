@@ -49,4 +49,27 @@ public class CategoryService {
         return category.getSubcategories();
     }
 
+    // Delete category
+    public void deleteCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // Remove subcategories associated with the category
+        for (SubCategory subCategory : category.getSubcategories()) {
+            subCategoryRepository.delete(subCategory);
+        }
+
+        // Delete the category itself
+        categoryRepository.delete(category);
+    }
+
+    // Delete subcategory
+    public void deleteSubCategory(Long subCategoryId) {
+        SubCategory subCategory = subCategoryRepository.findById(subCategoryId)
+                .orElseThrow(() -> new RuntimeException("SubCategory not found"));
+
+        subCategoryRepository.delete(subCategory);
+    }
+
+
 }

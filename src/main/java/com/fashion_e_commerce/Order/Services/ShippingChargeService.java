@@ -17,6 +17,12 @@ public class ShippingChargeService {
         return isDhaka ? shippingCharge.getChargeDhaka() : shippingCharge.getChargeOutsideDhaka();
     }
 
+    // Fetch full shipping charge object
+    public ShippingCharge getAllShippingCharge() {
+        return shippingChargeRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("Shipping charges not set"));
+    }
+
     public void setShippingCharge(double chargeDhaka, double chargeOutsideDhaka) {
         ShippingCharge shippingCharge = new ShippingCharge();
         shippingCharge.setId(1L);

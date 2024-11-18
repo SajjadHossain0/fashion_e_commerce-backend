@@ -63,4 +63,19 @@ public class CategoryController {
         List<SubCategory> subcategories = categoryService.getSubCategoriesByCategoryId(categoryId);
         return ResponseEntity.ok(subcategories);
     }
+
+    // Delete category by ID
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId) {
+        categoryService.deleteCategory(categoryId);
+        return ResponseEntity.ok("Category deleted successfully");
+    }
+
+    // Delete subcategory by ID
+    @DeleteMapping("/subcategories/{subCategoryId}")
+    public ResponseEntity<String> deleteSubCategory(@PathVariable Long subCategoryId) {
+        categoryService.deleteSubCategory(subCategoryId);
+        return ResponseEntity.ok("SubCategory deleted successfully");
+    }
+
 }
