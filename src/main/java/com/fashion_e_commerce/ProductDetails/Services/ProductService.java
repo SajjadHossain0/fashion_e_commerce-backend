@@ -124,18 +124,18 @@ public class ProductService {
         return "Product deleted successfully";
     }
 
-    // Get products by category
-    public List<Product> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategory_Id(categoryId);
-    }
-
-    // Get products by subcategory
-    public List<Product> getProductsBySubCategory(Long subCategoryId) {
-        return productRepository.findBySubCategory_Id(subCategoryId);
-    }
-
     public List<Product> globalSearch(String keyword) {
         return productRepository.searchProducts(keyword);
     }
+
+    public List<Product> getProductsByCategory(Long categoryId) {
+        return productRepository.findByCategoryId(categoryId);
+    }
+
+    // Fetch products by subcategory ID
+    public List<Product> getProductsBySubCategory(Long subCategoryId) {
+        return productRepository.findBySubCategoryId(subCategoryId);
+    }
+
 }
 

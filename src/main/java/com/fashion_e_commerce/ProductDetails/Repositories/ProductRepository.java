@@ -25,4 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "OR :keyword MEMBER OF p.tags")
     List<Product> searchProducts(@Param("keyword") String keyword);
 
+    List<Product> findByCategoryId(Long categoryId);
+    List<Product> findBySubCategoryId(Long subCategoryId);
+
 }
