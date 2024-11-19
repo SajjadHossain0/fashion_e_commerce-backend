@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin
 public class AuthenticationController {
 
@@ -43,6 +43,7 @@ public class AuthenticationController {
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             response.put("userId", String.valueOf(user.getId())); // add userId to response
+            response.put("role", user.getRole());
 
             return ResponseEntity.ok(response);
         } catch (AuthenticationException e) {

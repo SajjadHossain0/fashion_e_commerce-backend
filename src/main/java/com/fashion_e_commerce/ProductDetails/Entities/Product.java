@@ -40,9 +40,6 @@ public class Product {
     private String material;//e.g., Cotton, Polyester
     private int stock;
 
-    @Lob
-    private byte[] image;
-
     private boolean available;
 
     @ElementCollection
@@ -58,5 +55,9 @@ public class Product {
     public Product(Long id) {
         this.id = id;
     }
+
+
+    @Lob
+    private byte[] image;
 
 }
