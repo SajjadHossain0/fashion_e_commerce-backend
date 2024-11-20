@@ -6,6 +6,7 @@ import com.fashion_e_commerce.ProductDetails.Entities.Product;
 import com.fashion_e_commerce.ProductDetails.Repositories.ProductRepository;
 import com.fashion_e_commerce.User.Entities.User;
 import com.fashion_e_commerce.User.Repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,8 +62,13 @@ public class CartService {
         cartRepository.deleteById(cartItemId);
     }
 
-    public void clearCart(Long userId) {
+    /*public void clearCart(Long userId) {
         List<CartItem> cartItems = cartRepository.findByUserId(userId);
         cartRepository.deleteAll(cartItems);
+    }*/
+    @Transactional
+    public void clearCart(Long userId) {
+        cartRepository.deleteCartItemsWithOrder(userId);
     }
+
 }
