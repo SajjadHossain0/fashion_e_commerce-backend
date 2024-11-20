@@ -9,9 +9,9 @@ import com.fashion_e_commerce.User.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class CartService {
     @Autowired
@@ -21,27 +21,32 @@ public class CartService {
     @Autowired
     private UserRepository userRepository;
 
-    public CartItem addToCart(Long userId, Long productId, int quantity) {
+    public CartItem addToCart(Long userId, Long productId, int quantity, String size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-
-        Optional<CartItem> existingCartItem = cartRepository.findByUserIdAndProductId(userId, productId);
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Check if the size is valid
+        if (!product.getSizes().contains(size)) {
+            throw new RuntimeException("Invalid size selected for this product");
+        }
+
+        // Check if an item with the same product and size already exists in the cart
+        Optional<CartItem> existingCartItem = cartRepository.findByUserIdAndProductIdAndSize(userId, productId, size);
 
         if (existingCartItem.isPresent()) {
             CartItem item = existingCartItem.get();
             item.setQuantity(item.getQuantity() + quantity);
             item.setTotalprice(item.getQuantity() * product.getDiscountedPrice());
             return cartRepository.save(item);
-        }
-        else {
+        } else {
             CartItem newItem = new CartItem();
             newItem.setUser(user);
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
+            newItem.setSize(size); // Set the size
             newItem.setTotalprice(quantity * product.getDiscountedPrice());
             return cartRepository.save(newItem);
         }
@@ -51,11 +56,13 @@ public class CartService {
         return cartRepository.findByUserId(userId);
     }
 
+
     public void removeItem(Long cartItemId) {
         cartRepository.deleteById(cartItemId);
     }
 
     public void clearCart(Long userId) {
-        cartRepository.deleteAll(cartRepository.findByUserId(userId));
+        List<CartItem> cartItems = cartRepository.findByUserId(userId);
+        cartRepository.deleteAll(cartItems);
     }
 }

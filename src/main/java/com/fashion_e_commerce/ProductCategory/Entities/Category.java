@@ -1,5 +1,6 @@
 package com.fashion_e_commerce.ProductCategory.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;

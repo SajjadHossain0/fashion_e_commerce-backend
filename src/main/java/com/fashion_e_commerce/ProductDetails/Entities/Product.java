@@ -2,6 +2,7 @@ package com.fashion_e_commerce.ProductDetails.Entities;
 
 import com.fashion_e_commerce.ProductCategory.Entities.Category;
 import com.fashion_e_commerce.ProductCategory.Entities.SubCategory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

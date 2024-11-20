@@ -5,20 +5,19 @@ import com.fashion_e_commerce.Cart.Repositories.CartRepository;
 import com.fashion_e_commerce.Cart.Services.CartService;
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.Order.Repositories.OrderRepository;
-import com.fashion_e_commerce.Order.Repositories.ShippingChargeRepository;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.*;
-
-import org.apache.pdfbox.pdmodel.*;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class OrderService {
@@ -27,18 +26,18 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private CartService cartService; // Assuming a cart service exists
-    @Autowired
-    private ShippingChargeRepository shippingChargeRepository;
-    @Autowired
-    private ShippingChargeService shippingChargeService;
+    private CartService cartService;
+
     @Autowired
     private CartRepository cartRepository;
 
-    public Order placeOrder(Long userId, String contactInfo, String shippingAddress, String paymentMethod,boolean isDhaka) {
+    @Autowired
+    private ShippingChargeService shippingChargeService;
+
+    @Transactional
+    public Order placeOrder(Long userId, String contactInfo, String shippingAddress, String paymentMethod, boolean isDhaka) {
         // Fetch cart items for the user
         List<CartItem> cartItems = cartService.getCartItems(userId);
-
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty. Cannot place order.");
         }
@@ -48,27 +47,28 @@ public class OrderService {
                 .mapToDouble(CartItem::getTotalprice)
                 .sum();
 
-        // Get shipping charge
+        // Add shipping charge
         double shippingCharge = shippingChargeService.getShippingCharge(isDhaka);
-
-        // Add shipping charge to the total price
         double finalTotalPrice = totalPrice + shippingCharge;
 
         // Create an order
         Order order = new Order();
         order.setUser(cartItems.get(0).getUser()); // Assuming all cart items belong to the same user
-        order.setItems(cartItems);
         order.setShippingCharge(shippingCharge);
         order.setTotalPrice(finalTotalPrice);
         order.setContactInfo(contactInfo);
         order.setShippingAddress(shippingAddress);
         order.setPaymentMethod(paymentMethod);
         order.setOrderDate(LocalDateTime.now());
+        order.setItems(cartItems);
+
+        // Associate order with cart items
+        cartItems.forEach(item -> item.setOrder(order));
 
         // Save the order
         Order savedOrder = orderRepository.save(order);
 
-        // Clear the user's cart
+        // Clear the cart after order is saved
         cartService.clearCart(userId);
 
         return savedOrder;
@@ -79,19 +79,21 @@ public class OrderService {
     }
 
     public List<Order> getAllOrders() {
-        return orderRepository.findAll(); // Admin feature to view all orders
+        return orderRepository.findAll();
     }
 
     public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElse(null);  // Fetch order or return null if not found
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
     @Transactional
     public void deleteOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        orderRepository.delete(order); // CartItems will be deleted automatically
+        orderRepository.delete(order);
     }
+
     @Transactional
     public void removeCartItem(Long orderId, Long cartItemId) {
         Order order = orderRepository.findById(orderId)
@@ -99,11 +101,10 @@ public class OrderService {
         CartItem cartItem = cartRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("CartItem not found"));
 
-        order.getItems().remove(cartItem); // Remove the item
-        orderRepository.save(order); // This triggers orphan removal
+        // Remove the cart item and update the order
+        order.getItems().remove(cartItem);
+        orderRepository.save(order);
     }
-
-
 
     public byte[] generateInvoice(Order order) throws IOException {
         try (PDDocument document = new PDDocument()) {
@@ -133,7 +134,8 @@ public class OrderService {
             contentStream.showText("Order Details:");
             contentStream.newLine();
             for (CartItem item : order.getItems()) {
-                contentStream.showText("- " + item.getProduct().getTitle() + " | Quantity: " + item.getQuantity() + " | Price: " + item.getProduct().getDiscountedPrice());
+                contentStream.showText("- " + item.getProduct().getTitle() + " | Quantity: " +
+                        item.getQuantity() + " | Price: " + item.getProduct().getDiscountedPrice());
                 contentStream.newLine();
             }
 

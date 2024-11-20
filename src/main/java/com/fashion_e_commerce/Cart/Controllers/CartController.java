@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/cart")
 @CrossOrigin
@@ -20,8 +20,9 @@ public class CartController {
     public ResponseEntity<CartItem> addToCart(
             @RequestParam Long userId,
             @RequestParam Long productId,
-            @RequestParam int quantity) {
-        CartItem item = cartService.addToCart(userId, productId, quantity);
+            @RequestParam int quantity,
+            @RequestParam String size) { // New parameter for size
+        CartItem item = cartService.addToCart(userId, productId, quantity, size);
         return ResponseEntity.ok(item);
     }
 
@@ -29,6 +30,8 @@ public class CartController {
     public ResponseEntity<List<CartItem>> getCartItems(@PathVariable Long userId) {
         return ResponseEntity.ok(cartService.getCartItems(userId));
     }
+
+
 
     @DeleteMapping("/remove/{cartItemId}")
     public ResponseEntity<String> removeItem(@PathVariable Long cartItemId) {
@@ -42,4 +45,3 @@ public class CartController {
         return ResponseEntity.ok("Cart cleared");
     }
 }
-

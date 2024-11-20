@@ -25,7 +25,7 @@ public class Order {
     @ManyToOne
     private User user; // The user who placed the order
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CartItem> items; // List of items in the order
 
     private Double shippingCharge;

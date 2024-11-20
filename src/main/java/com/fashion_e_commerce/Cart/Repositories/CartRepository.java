@@ -12,6 +12,8 @@ import java.util.*;
 public interface CartRepository extends JpaRepository<CartItem, Long> {
 
     List<CartItem> findByUserId(Long userId);
+    Optional<CartItem> findByUserIdAndProductIdAndSize(Long userId, Long productId, String size); // New method
+
     @Modifying
     @Query("DELETE FROM CartItem ci WHERE ci.product.id = :productId")
     void deleteByProductId(Long productId);
