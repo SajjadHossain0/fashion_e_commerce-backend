@@ -5,6 +5,9 @@ import com.fashion_e_commerce.Cart.Repositories.CartRepository;
 import com.fashion_e_commerce.Cart.Services.CartService;
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.Order.Repositories.OrderRepository;
+import com.fashion_e_commerce.User.Entities.User;
+import com.fashion_e_commerce.User.Repositories.UserRepository;
+import com.fashion_e_commerce.User.Services.UserService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -33,6 +36,10 @@ public class OrderService {
 
     @Autowired
     private ShippingChargeService shippingChargeService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
 
     @Transactional
     public Order placeOrder(Long userId, String contactInfo, String shippingAddress, String paymentMethod, boolean isDhaka) {
@@ -70,6 +77,11 @@ public class OrderService {
 
         // Clear the cart after order is saved
         cartService.clearCart(userId);
+
+        User user = userRepository.findById(userId).get();
+        user.setNumber(order.getContactInfo());
+        user.setAddress(order.getShippingAddress());
+        userRepository.save(user);
 
         return savedOrder;
     }
