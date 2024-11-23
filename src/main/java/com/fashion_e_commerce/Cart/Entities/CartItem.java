@@ -3,6 +3,7 @@ package com.fashion_e_commerce.Cart.Entities;
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.ProductDetails.Entities.Product;
 import com.fashion_e_commerce.User.Entities.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +31,8 @@ public class CartItem {
     private double totalprice;
 
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = true)
+    @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
 }

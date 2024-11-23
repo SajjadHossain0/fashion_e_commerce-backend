@@ -4,6 +4,8 @@ import com.fashion_e_commerce.Cart.Entities.CartItem;
 import com.fashion_e_commerce.Cart.Repositories.CartRepository;
 import com.fashion_e_commerce.Cart.Services.CartService;
 import com.fashion_e_commerce.Order.Entities.Order;
+import com.fashion_e_commerce.Order.Entities.OrderItem;
+import com.fashion_e_commerce.Order.Repositories.OrderItemRepository;
 import com.fashion_e_commerce.Order.Repositories.OrderRepository;
 import com.fashion_e_commerce.User.Entities.User;
 import com.fashion_e_commerce.User.Repositories.UserRepository;
@@ -40,6 +42,8 @@ public class OrderService {
     private UserRepository userRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     @Transactional
     public Order placeOrder(Long userId, String contactInfo, String shippingAddress, String paymentMethod, boolean isDhaka) {
@@ -60,23 +64,26 @@ public class OrderService {
 
         // Create an order
         Order order = new Order();
-        order.setUser(cartItems.get(0).getUser()); // Assuming all cart items belong to the same user
+        order.setUser(cartItems.get(0).getUser());
         order.setShippingCharge(shippingCharge);
         order.setTotalPrice(finalTotalPrice);
         order.setContactInfo(contactInfo);
         order.setShippingAddress(shippingAddress);
         order.setPaymentMethod(paymentMethod);
         order.setOrderDate(LocalDateTime.now());
-        order.setItems(cartItems);
-
-        // Associate order with cart items
-        cartItems.forEach(item -> item.setOrder(order));
 
         // Save the order
         Order savedOrder = orderRepository.save(order);
 
-        // Clear the cart after order is saved
-        cartService.clearCart(userId);
+        // Save cart items as order items
+        for (CartItem cartItem : cartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(savedOrder);
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getTotalprice());
+            orderItemRepository.save(orderItem);
+        }
 
         User user = userRepository.findById(userId).get();
         user.setNumber(order.getContactInfo());
@@ -95,9 +102,14 @@ public class OrderService {
     }
 
     public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Ensure orderItems is loaded
+        order.getOrderItems().size(); // Force Hibernate to load the collection
+        return order;
     }
+
 
     @Transactional
     public void updateOrderStatus(Long orderId, String status) {
