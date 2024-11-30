@@ -166,3 +166,12 @@ public class PaymentController {
         }
     }
 }
+/*
+#sslcommerze application.properties
+sslcommerz.storeId=id
+sslcommerz.storePassword=id@ssl
+sslcommerz.baseUrl=https://sandbox.sslcommerz.com
+sslcommerz.successUrl = http://localhost:3000/payment-status?status=VALID&tran_id={TRAN_ID}
+sslcommerz.failUrl = http://localhost:3000/payment-status?status=FAILED&tran_id={TRAN_ID}
+sslcommerz.cancelUrl = http://localhost:3000/payment-status?status=CANCELLED&tran_id={TRAN_ID}
+*/
