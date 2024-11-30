@@ -2,17 +2,23 @@ package com.fashion_e_commerce.Order.Controllers;
 
 import com.fashion_e_commerce.Order.Entities.Order;
 import com.fashion_e_commerce.Order.Services.OrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
 
     private final OrderService orderService;
+    private final WebClient webClient;
+
     @Value("${sslcommerz.storeId}")
     private String storeId;
 
@@ -31,15 +37,24 @@ public class PaymentController {
     @Value("${sslcommerz.cancelUrl}")
     private String cancelUrl;
 
-    public PaymentController(OrderService orderService) {
+    public PaymentController(OrderService orderService, WebClient.Builder webClientBuilder) {
         this.orderService = orderService;
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
-
     @PostMapping("/initiate")
-    public ResponseEntity<Map<String, String>> initiatePayment(@RequestParam Long orderId) {
-        // Fetch the order details
+    public ResponseEntity<?> initiatePayment(@RequestParam Long orderId) {
+        log.info("Initiating payment for orderId: {}", orderId);
+
+        // Fetch order details
         Order order = orderService.getOrderById(orderId);
+        if (order == null || order.getTotalPrice() <= 0) {
+            log.error("Invalid order details for orderId: {}", orderId);
+            throw new ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Invalid order or missing payment details."
+            );
+        }
 
         // Prepare payment request payload
         Map<String, String> paymentRequest = new HashMap<>();
@@ -57,44 +72,72 @@ public class PaymentController {
         paymentRequest.put("cus_phone", order.getContactInfo());
         paymentRequest.put("product_name", "Order_" + orderId);
 
-        // Make HTTP request to SSLCommerz
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                baseUrl + "/gwprocess/v4/api.php",
-                paymentRequest,
-                Map.class
-        );
+        log.info("Payment request payload: {}", paymentRequest);
 
-        // Return the payment gateway redirect URL
-        return ResponseEntity.ok(response.getBody());
+        try {
+            // Make HTTP request to SSLCommerz
+            Map<String, Object> response = webClient
+                    .post()
+                    .uri("/gwprocess/v4/api.php")
+                    .bodyValue(paymentRequest)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            log.info("Payment response: {}", response);
+
+            // Validate the response from SSLCommerz
+            if (response != null && "SUCCESS".equalsIgnoreCase((String) response.get("status"))) {
+                return ResponseEntity.ok(response);
+            } else {
+                log.error("Payment initiation failed: {}", response);
+                return ResponseEntity.badRequest().body(Map.of("error", "Failed to initiate payment."));
+            }
+        } catch (Exception e) {
+            log.error("Error initiating payment: {}", e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Payment initiation failed."));
+        }
     }
 
     @PostMapping("/success")
     public ResponseEntity<String> handleSuccess(@RequestParam Map<String, String> params) {
+        log.info("Payment success callback received with params: {}", params);
+
         String transactionId = params.get("tran_id");
         String status = params.get("status");
 
         if ("VALID".equals(status)) {
-            // Update the order status in the database
-            Long orderId = Long.parseLong(transactionId.split("_")[1]);
-            orderService.updateOrderStatus(orderId, "Paid");
-            return ResponseEntity.ok("Payment Successful!");
+            try {
+                Long orderId = Long.parseLong(transactionId.split("_")[1]);
+                orderService.updateOrderStatus(orderId, "Paid");
+                log.info("Order {} marked as Paid.", orderId);
+                return ResponseEntity.ok("Payment Successful!");
+            } catch (Exception e) {
+                log.error("Error updating payment status: {}", e.getMessage());
+                return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Payment validation failed!");
+            }
         }
         return ResponseEntity.badRequest().body("Invalid Payment");
     }
 
     @PostMapping("/fail")
     public ResponseEntity<String> handleFail(@RequestParam Map<String, String> params) {
+        log.warn("Payment failed with params: {}", params);
         return ResponseEntity.badRequest().body("Payment Failed");
     }
 
     @PostMapping("/cancel")
     public ResponseEntity<String> handleCancel(@RequestParam Map<String, String> params) {
+        log.warn("Payment cancelled with params: {}", params);
         return ResponseEntity.ok("Payment Cancelled");
     }
 
     @PostMapping("/validate")
     public ResponseEntity<?> validatePayment(@RequestParam String transactionId) {
+        log.info("Validating payment for transactionId: {}", transactionId);
+
         String validationUrl = baseUrl + "/validator/api/validationserverAPI.php";
         Map<String, String> params = Map.of(
                 "store_id", storeId,
@@ -102,11 +145,24 @@ public class PaymentController {
                 "tran_id", transactionId
         );
 
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Map> response = restTemplate.getForEntity(validationUrl, Map.class, params);
+        try {
+            Map<String, Object> response = webClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder.path("/validator/api/validationserverAPI.php")
+                            .queryParam("store_id", storeId)
+                            .queryParam("store_passwd", storePassword)
+                            .queryParam("tran_id", transactionId)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
 
-        return ResponseEntity.ok(response.getBody());
+            log.info("Validation response: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error validating payment: {}", e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Payment validation failed."));
+        }
     }
-
-
 }
