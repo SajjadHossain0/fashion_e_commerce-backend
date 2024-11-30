@@ -33,6 +33,7 @@ public class SecurityConfig {
     @Autowired
     private final JWTAuthFilter jwtAuthFilter;
 
+
     public SecurityConfig(UserService userService, JWTAuthFilter jwtAuthFilter) {
         this.userService = userService;
         this.jwtAuthFilter = jwtAuthFilter;
@@ -62,8 +63,8 @@ public class SecurityConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Update with your frontend URL
-        configuration.setAllowedOrigins(Arrays.asList("https://sajjad-ecommerce-ten.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Update with your frontend URL
+        //configuration.setAllowedOrigins(Arrays.asList("https://sajjad-ecommerce-ten.vercel.app"));
 
         configuration.setAllowedMethods(Arrays.asList(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name()));
         configuration.setAllowedHeaders(Arrays.asList("*"));
