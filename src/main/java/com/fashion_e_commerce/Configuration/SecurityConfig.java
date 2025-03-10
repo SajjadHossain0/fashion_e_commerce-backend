@@ -3,6 +3,7 @@ package com.fashion_e_commerce.Configuration;
 import com.fashion_e_commerce.User.Components.JWTAuthFilter;
 import com.fashion_e_commerce.User.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,8 @@ public class SecurityConfig {
     private final UserService userService;
     @Autowired
     private final JWTAuthFilter jwtAuthFilter;
+    @Value("${FRONTEND_LINK}")
+    private String FRONTEND_LINK;
 
 
     public SecurityConfig(UserService userService, JWTAuthFilter jwtAuthFilter) {
@@ -52,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers("/api/orders/**").permitAll()
                         .requestMatchers("/api/shipping/**").permitAll()
+                        .requestMatchers("/api/payment/**").permitAll()
                         .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated() // Require authentication for other requests
                 )
@@ -63,8 +67,7 @@ public class SecurityConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Update with your frontend URL
-        configuration.setAllowedOrigins(Arrays.asList("https://sajjad-ecommerce-ten.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList(FRONTEND_LINK)); // Update with your frontend URL
 
         configuration.setAllowedMethods(Arrays.asList(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name()));
         configuration.setAllowedHeaders(Arrays.asList("*"));

@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql_db_docker
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root321
+      MYSQL_DATABASE: fashion_e_commerce
+#      MYSQL_USER: user
+#      MYSQL_PASSWORD: password
+    ports:
+      - "3307:3306" #host macchine port : image port
+
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    healthcheck:
+     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+     interval: 10s
+     timeout: 5s
+     retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root321
+
+    ports:
+      - "8081:80"
+
+    depends_on:
+      - mysql
+
+  springboot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fashion_e_commerce
+
+    environment:
+      SPRING_APPLICATION_NAME: fashion_e_commerce
+      SPRINGBOOT_SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/fashion_e_commerce?serverTimezone=UTC&useLegacyDatetimeCode=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root321
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      FRONTEND_LINK: http://localhost:3000
+
+    ports:
+      - "8080:8080"
+
+    restart: always
+
+    depends_on:
+       mysql:
+        condition: service_healthy
+
+#  Java Code (.java)	  - docker-compose restart springboot	- Restarts only Spring Boot (faster).
+#  application.properties - or .env	docker-compose up -d --build	-   Applies new environment variables.
+#  Dockerfile (dependencies, JAR, etc.)  -	docker-compose down && docker-compose up -d --build   - 	Full rebuild needed.
+#  MySQL Schema/Data  -	Backup first, then docker-compose down -v && docker-compose up -d  -	Avoids losing data.
+
